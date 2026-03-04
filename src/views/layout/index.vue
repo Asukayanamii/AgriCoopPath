@@ -1,6 +1,6 @@
 <template>
   <div class="common-layout">
-    <el-container style="height: 100vh;">
+    <el-container class="el-container-main">
       <!-- Header 区域 - 农业无人机主题 -->
       <el-header class="header">
         <!-- 侧边栏收起/展开触发器 -->
@@ -33,7 +33,7 @@
         </div>
       </el-header>
       
-      <el-container>
+      <el-container class="el-container-sub">
         <!-- 左侧可折叠菜单 -->
         <el-aside 
           :width="isCollapse ? '64px' : '220px'" 
@@ -166,10 +166,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 // 全局引入Element Plus图标（避免选择性引入导致白屏）
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
-// import { ElMessage } from 'element-plus'
-// import { log } from 'node:console'
-// import { request } from '@/utils/request'
-// import { loginornotApi } from '@/api/userloginornot'
+
 const router = useRouter()
 const logout = () => {
   // 自定义退出登录确认弹窗，优化样式和动画
@@ -234,14 +231,13 @@ const handleCommand = (command) => {
       // 这里可以添加打开修改密码弹窗的逻辑
       break
     case 'logout':
-      // ElMessage.info('退出登录功能待实现')
-      // 这里可以添加退出登录的逻辑
       logout() // 调用退出登录函数
       break
   }
 }
 
 let loading = ref(true) // 加载状态
+let data = ref({}) // 补充缺失的data定义，避免报错
 // 定义请求函数
 const fetchData = async () => {
   try {
@@ -262,9 +258,43 @@ fetchData()
 </script>
 
 <style scoped>
-/* 全局布局样式 */
+/* 全局样式重置 - 消除默认边距和滚动条 */
+:root {
+  margin: 0;
+  padding: 0;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* 全局布局样式 - 核心修复 */
 .common-layout {
-  height: 100vh;
+  width: 100vw;          /* 视口宽度100% */
+  height: 100vh;         /* 视口高度100% */
+  position: fixed;       /* 固定定位，完全覆盖视口 */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;      /* 隐藏溢出，消除滚动条 */
+  margin: 0;
+  padding: 0;
+}
+
+/* 主容器样式 */
+.el-container-main {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* 子容器样式 */
+.el-container-sub {
+  height: calc(100% - 60px); /* 减去header高度 */
+  width: 100%;
   overflow: hidden;
 }
 
@@ -277,6 +307,8 @@ fetchData()
   position: relative;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   z-index: 10;
+  height: 60px;          /* 固定header高度，避免高度变化 */
+  width: 100%;           /* 宽度100%，消除右侧白边 */
 }
 
 /* 侧边栏切换按钮 */
@@ -338,6 +370,7 @@ fetchData()
   background-color: #f9fafb;
   transition: all 0.3s ease;
   overflow: hidden;
+  height: 100%; /* 高度100%，消除底部白边 */
 }
 
 .aside-collapse {
@@ -374,12 +407,14 @@ fetchData()
   background-color: rgba(34, 139, 34, 0.1);
 }
 
-/* 主内容区 */
+/* 主内容区 - 核心修复 */
 .main-content {
   background-color: #f5f7fa;
   padding: 20px;
   overflow-y: auto;
-  height: calc(100vh - 60px);
+  height: 100%;          /* 改为100%，基于父容器高度 */
+  width: 100%;           /* 宽度100%，消除右侧白边 */
+  margin: 0;             /* 清除默认margin */
 }
 
 /* 响应式适配 */
@@ -404,7 +439,7 @@ fetchData()
 }
 
 /* 退出登录弹窗整体样式 */
-.custom-logout-box {
+:deep(.custom-logout-box) {
   width: 420px !important;
   border-radius: 12px !important;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12) !important;
@@ -414,7 +449,7 @@ fetchData()
 }
 
 /* 弹窗标题样式 */
-.custom-logout-box .el-message-box__title {
+:deep(.custom-logout-box .el-message-box__title) {
   font-size: 18px !important;
   font-weight: 600 !important;
   color: #2d3748 !important;
@@ -422,7 +457,7 @@ fetchData()
 }
 
 /* 弹窗内容样式 */
-.custom-logout-box .el-message-box__content {
+:deep(.custom-logout-box .el-message-box__content) {
   padding: 24px !important;
   font-size: 15px !important;
   color: #4a5568 !important;
@@ -430,7 +465,7 @@ fetchData()
 }
 
 /* 弹窗按钮区域 */
-.custom-logout-box .el-message-box__btns {
+:deep(.custom-logout-box .el-message-box__btns) {
   padding: 0 24px 20px 24px !important;
   display: flex !important;
   gap: 12px !important;
@@ -438,7 +473,7 @@ fetchData()
 }
 
 /* 确认退出按钮样式 */
-.logout-confirm-btn {
+:deep(.logout-confirm-btn) {
   padding: 8px 20px !important;
   border-radius: 8px !important;
   background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%) !important;
@@ -448,13 +483,13 @@ fetchData()
   transition: all 0.3s ease !important;
 }
 
-.logout-confirm-btn:hover {
+:deep(.logout-confirm-btn:hover) {
   transform: translateY(-2px) !important;
   box-shadow: 0 4px 12px rgba(229, 62, 62, 0.25) !important;
 }
 
 /* 取消按钮样式 */
-.logout-cancel-btn {
+:deep(.logout-cancel-btn) {
   padding: 8px 20px !important;
   border-radius: 8px !important;
   background: #f8fafc !important;
@@ -465,7 +500,7 @@ fetchData()
   transition: all 0.3s ease !important;
 }
 
-.logout-cancel-btn:hover {
+:deep(.logout-cancel-btn:hover) {
   background: #f1f5f9 !important;
   border-color: #cbd5e0 !important;
   transform: translateY(-2px) !important;
@@ -473,7 +508,7 @@ fetchData()
 }
 
 /* 提示消息样式 */
-.custom-logout-message {
+:deep(.custom-logout-message) {
   border-radius: 8px !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
   animation: fadeIn 0.3s ease-out !important;
@@ -505,16 +540,25 @@ fetchData()
 
 /* 响应式适配 */
 @media (max-width: 480px) {
-  .custom-logout-box {
+  :deep(.custom-logout-box) {
     width: 90% !important;
   }
   
-  .custom-logout-box .el-message-box__btns {
+  :deep(.custom-logout-box .el-message-box__btns) {
     flex-direction: column !important;
   }
   
-  .logout-confirm-btn, .logout-cancel-btn {
+  :deep(.logout-confirm-btn), :deep(.logout-cancel-btn) {
     width: 100% !important;
   }
+}
+
+/* 全局滚动条隐藏 - 兜底方案 */
+::-webkit-scrollbar {
+  display: none;
+}
+
+:deep(body) {
+  overflow: hidden;
 }
 </style>
